@@ -1,5 +1,8 @@
+import absen
+import re
 from account.models import *
 from account.serializers import *
+from rest_framework.parsers import JSONParser
 from rest_framework import viewsets
 from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
@@ -41,8 +44,9 @@ class MasterJurusanViewSet(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
 
 class AbsensiViewSet(viewsets.ModelViewSet):
-    queryset = Absensi.objects.all()
+    queryset = Absensi.objects.raw('SELECT account_absensi.daily, account_absensi.status, account_absensi.checked_in, account_absensi.checked_out, account_absensi.checkin, account_absensi.checkout, account_mastersiswa.name, account_mastersiswa.nisn FROM account_mastersiswa INNER JOIN account_absensi ON account_mastersiswa.nisn = account_absensi.id_absensi_id')
     serializer_class = AbsensiSerializer
+
     # authentication_classes = (TokenAuthentication,)
     # permission_classes = (IsAuthenticated,)
 
@@ -65,11 +69,14 @@ class DailyViewSet(viewsets.ModelViewSet):
 
 
 class AbsensiAPIView(APIView):
-    @csrf_exempt
+
+    parser_classes = [JSONParser]
+
     def post(self, request):
-        absensi = Absensi(id_absensi=request.id_absensi, daily=request.daily, status=request.status, checked_in=request.checked_in, 
-                          checked_out=request.checked_out, checkin=request.checkin, checkout=request.checkout)
+        absensi = Absensi(id_absensi=request.data['id_absensi'], daily=request.data['daily'], status=request.data['status'], checked_in=request.data['checked_in'], 
+                          checked_out=request.data['checked_out'], checkin=request.data['checkin'], checkout=request.data['checkout'])
         absensi.save()
+
         absensi = {
             'id_absensi': absensi.id_absensi,
             'daily': absensi.daily, 
@@ -78,8 +85,8 @@ class AbsensiAPIView(APIView):
             'checked_out': absensi.checked_out,
             'checkin': absensi.checkin,
             'checkout': absensi.checkout,
-            }
-        pusher.trigger(request,'absenvttv3', 'absen', absensi)
+          }
+        pusher.trigger('absenvttv3', 'absen', absensi)
 
         # return a json response of the broadcasted messgae
         return JsonResponse(absensi, safe=False)
@@ -87,8 +94,8 @@ class AbsensiAPIView(APIView):
 
 class AkunAPIView(APIView):
     def post(self, request):
-        akun = Akun(nama='', password='');
-        akun.save();
+        akun = Akun(nama=request.data['nama'], password=request.data['password']);
+        akun.save()
         akun = {
             'nama': akun.nama,
             'password': akun.password, 

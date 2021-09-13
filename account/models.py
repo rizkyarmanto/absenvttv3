@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, User
 
 # Create your models here.
 
@@ -42,7 +42,7 @@ class MasterSiswa(models.Model):
         return f'{self.nisn}'
 
 class Absensi(models.Model):
-    id_absensi              = models.ForeignKey(MasterSiswa, on_delete=models.CASCADE)
+    id_absensi              = models.CharField(max_length=100)
     daily                   = models.DateField(null=True, blank=True, default=None)
     status                  = models.BooleanField()
     checked_in              = models.BooleanField()

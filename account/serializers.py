@@ -1,3 +1,4 @@
+from rest_framework.fields import ReadOnlyField
 from account.models import *
 from rest_framework import serializers
 
@@ -19,6 +20,7 @@ class MasterJurusanSerializer(serializers.ModelSerializer):
 
 class AbsensiSerializer(serializers.ModelSerializer):
     class Meta:
+        id_absensi = MasterSiswaSerializer(read_only=False)
         model = Absensi
         fields = ['id','id_absensi', 'daily', 'status', 'checkin', 'checkout', 'checked_in', 'checked_out']
 
